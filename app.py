@@ -1,123 +1,173 @@
-from flask import Flask, jsonify, render_template, request # Importa flask para crear la web en en enlace raiz
-import psycopg2 # Permite conectarse con la base de datos
-from psycopg2.extras import RealDictCursor # Devuelve los resultados de las consultas que se hagan
-import os # Permite las variables de sistema 
-from datetime import datetime # Sirve para trabajar con fechas y horas exactas
+#  Importaciones necesarias para la aplicación Flask
+
+from flask import Flask, jsonify, render_template, request
+import psycopg2                        # Para conectarse a PostgreSQL
+from psycopg2.extras import RealDictCursor  # Devuelve resultados tipo diccionario
+from datetime import datetime          # Para manejar fechas de creación en tiempo real
+
+#  Configuración base de la aplicación Flask
+
+app = Flask(__name__)  # Crea la aplicación Flask
 
 
-# Congifuracion de la aplicacion:
+#  Configuración de conexión a la base de datos PostgreSQL
 
-app = Flask(__name__) 
-DB_CONFIG = { # La configuracion interna de la base de la datos
-    'host': 'localhost',
-    'database': 'diseño',
-    'user': 'postgres',
-    'password': 123456,
-    'port': 5432
+DB_CONFIG = {
+    'host': 'localhost',     # Servidor de base de datos (local)
+    'database': 'diseño', # Nombre de la base de datos creada
+    'user': 'postgres',      # Usuario por defecto de PostgreSQL,o dueño
+    'password': '123456',    # Contraseña del usuario
+    'port': 5432             # Puerto por defecto de PostgreSQL
 }
 
-def conectar_db(): # Funcion para conectar la base de datos
-    try: # Intentar hacer una conexion con los datos de configuracion
-        conexion = psycopg2.connect(**DB_CONFIG) # importar la libreria de psycopg2
-        return conexion # Si todo sale correcto devuelve la conexion
-    except psycopg2.Error as e: # Si sale mal saldra en la consola
-        print("La conexion con la base de datos fue erronea", e)
-        return None # retorna un mensaje si falta la conexion
-    # Crear la tabla contactos
-def crear_tabla():
-    conexion = conectar_db() # Se conectara a la base de datos directamente si todo sale bien
-    if conexion:
-        cursor = conexion.cursor() # Se crea un cursor para la conexion con la db
+
+#  Función para conectar a la base de datos
+
+def conectar_bd():
+    """Establece conexión con la base de datos PostgreSQL."""
+    try:
+        conexion = psycopg2.connect(**DB_CONFIG)
+        return conexion  # Devuelve la conexión si es exitosa
+    except psycopg2.Error as e: # La e se vuelve una variable de un 'metodo' erroneo para psycopg2
+        print(f"Error al conectar a la base de datos: {e}") # Printea el error
+        return None      # Devuelve None si no se pudo conectar
+
+
+#  Página principal: muestra el formulario HTML
+
+@app.route('/') # La primera ruta por defecto por Flask
+def inicio(): # Funcion que permitira ejecutar la primera pagina
+    """Ruta principal que muestra el formulario HTML."""
+    return render_template('index.html')  # Carga de la carpeta templates el archivo index.html
+
+
+#  Ruta para guardar los datos enviados desde el formulario
+
+@app.route('/formulario', methods=['POST']) # No es una página, es una ruta lógica:
+#  No se abre en el navegador como un HTML visual
+#  pero sí existe internamente dentro del servidor Flask para recibir datos.
+
+# GET → para pedir datos (por ejemplo, ver información)
+
+# POST → para enviar datos (por ejemplo, enviar un formulario),en este caso para enviar los datos del formulario
+
+# PUT, DELETE → para actualizar o eliminar datos, respectivamente.
+
+
+# Funcion para guardar cada formulario despues del metodo POST que envia los datos
+
+def guardar_contacto():
+    """Guarda los datos del formulario en la base de datos."""
+    conexion = None # Por ahora es None la conexion
+    cursor = None # Cursos por ahora es None
+    try:
+        conexion = conectar_bd()  # Hace la funcion de conectarse a la base de datos
+        if conexion is None: # Si no se hizo la conexion
+            return jsonify({'error': 'No se pudo conectar a la base de datos'}), 500 # Imprime error 500
+
+        # Captura los datos enviados desde el formulario HTML
+        datos = request.form # Metodo para recoger los datos del formulario
+        nombre = datos.get('nombre', '').strip() # .strip() para dejar sin espacios y .get para agarrar el valor
+        apellido = datos.get('apellido', '').strip() # .strip() para dejar sin espacios y .get para agarrar el valor
+        direccion = datos.get('direccion', '').strip() # .strip() para dejar sin espacios y .get para agarrar el valor
+        telefono = datos.get('telefono', '').strip() # .strip() para dejar sin espacios y .get para agarrar el valor
+        correo = datos.get('correo', '').strip() # .strip() para dejar sin espacios y .get para agarrar el valor
+        mensaje = datos.get('mensaje', '').strip() # .strip() para dejar sin espacios y .get para agarrar el valor
+
+        # Validar campos obligatorios
+        if not nombre or not correo: # Si no ingreso ni nombre ni correo
+            return jsonify({'error': 'Nombre y correo son obligatorios'}), 400 # Imprime error 400
+
+        # Crear cursor para ejecutar la consulta SQL
+        cursor = conexion.cursor() 
+
+        # Insertar datos en la tabla 'contactos'
+        # Codigo SQL con la funcion del cursor.execute para ejecutar:
         cursor.execute("""
-        CREATE TABLE if NOT EXISTS contactos(
-                       id SERIAL PRIMARY KEY, --- Identificador unico ---
-                       nombre VARCHAR (100) NOT NULL, --- Campo del nombre ---
-                       correo VARCHAR (100) NOT NULL, --- Campo del correo ---
-                       mesaje TEXT, --- Campo del mensaje ---
-                       creado TIMESTAMP DEFAULT NOW() --- Fecha y hora de creacion ---
-                       );
+            INSERT INTO contactos (nombre, apellido, direccion, telefono, correo, mensaje)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id;
+        """, (nombre, apellido, direccion, telefono, correo, mensaje))
 
-""")
-        conexion.commit() # Guarda los cambios al trabajar en la base de datos
-        cursor.close() # Cierra el cursor
-        conexion.close() # Cierra la conexion con la base de datos
+        contacto_id = cursor.fetchone()[0]  # Obtener el ID del registro insertado
+        conexion.commit()                   # Confirmar los cambios
+
+        # Respuesta exitosa en formato JSON
+        return jsonify({ # Retorna si funciono bien o no
+            'mensaje': ' Contacto guardado exitosamente',
+            'id': contacto_id
+        }), 201
+
+    except Exception as e: # Se crea la variable e con la funcion del error Exception de psycopg2
+        print(f" Error al guardar el contacto: {e}") # Y se imprime el error que sucedio: No se pudo guardar el contacto
+        return jsonify({'error': 'Error al procesar la solicitud'}), 500 # Se imprime nuevamente si no se pudo cargar la solicitud en la web
+
+    finally:
+        # Cerrar cursor y conexión (si existen)
+        # Se cierra el cursos y la conexion con la db
+        if cursor: # Se cierra el cursos y la conexion con la db
+            cursor.close()
+        if conexion:
+            conexion.close()
 
 
-# Página principal (registro)
-@app.route('/')
-def index(): # Ruta del registro
-    return render_template("index.html", titulo="Registro de cuenta")
-@app.route('/contactos',methods=['POST'])
-def guardar_contactos():
-    try:
-        conexion =conectar_db() # Conexion a la base de datos
-        if conexion is None: # Si no se puede conectar a la base de datos devuelve error
-            return jsonify({'error': 'no se pudo conectar a la base de datos'}), 500 # Retorna error 500 de conexion por no poder conectar la base de datos
-        
-        # OBTIENE TODOS LOS DATOS ENVIADOS EN FORMATO json
-        datos = request.get_json()
-        nombre = datos.get('nombre'.strip) # Obtiene el nombre sin espacio o genera error
-        correo = datos.get('correo'.strip)
-        mensaje = datos.get('mensaje'.strip) # Obtiene el nombre sin espacio o genera error
+#  Ruta para consultar todos los contactos guardados
 
-        # Validar que nombre y correo no esten vacios
-        if not nombre or not correo:
-            return jsonify({'error': 'no se pudo conectar a la base de datos'}), 400 # Retorna erro 400 de campos obligatorios 
-        # Crear el cursor para ejecutarlo en SQL
-        cursor = conexion.cursor()
-        sql_insertar = """
-        INSERT INTO contactos (nombre,correo,mensaje)
-        VALUE(%s,%s,%s)
-        RETURNIG id;
-        """ # Conexion a consulta en la tabla para los nuevos contacto
+@app.route('/ver-contactos', methods=['GET']) # No es una página, es una ruta lógica:
+#  No se abre en el navegador como un HTML visual
+#  pero sí existe internamente dentro del servidor Flask para recibir datos.
 
-        # ejecutar las consultas con las consultas recibidas
-        cursor.execute(sql_insertar,(nombre,correo,mensaje))
+# GET → para pedir datos (por ejemplo, ver información),en este caso pedir los datos y agarrarlos para su consulta de los contactos
 
-        conectar_id = cursor.fetchone()[0] # obtiene el id del registro
+# POST → para enviar datos (por ejemplo, enviar un formulario)
 
-        conexion.commit() # Guarda los cambios al trabajar en la base de datos
+# PUT, DELETE → para actualizar o eliminar datos, respectivamente.
 
-        cursor.close() # Cierra el cursor
 
-        conexion.close() # Cierra la conexion con la base de datos
+# Funcion para ver los contactos de la db
 
-        # Devuelve un mensaje de exito con el id generado
-        return jsonify({
-            'mensaje': 'contacto guardado exitosamente',
-            'id': 'contacto_id'
-        })
-    except Exception as e:
-        print("Error al guardar el contacto ",e) # Si ocurre un error lo muestra y devuelve un mensaje de error
-        return jsonify({'error': 'Error al procesar la solicitud'}), 500 # Retorna error 500 de conexion por no poder conectar la base de datos
 
-# Ruta para consultar los datos guardados
-
-@app.route('/contactos',methods=['GET'])
 def ver_contactos():
+    """Devuelve todos los contactos registrados en formato JSON."""
+    conexion = None # Conexion None por ahora
+    cursor = None # Al igual que el cursor
     try:
-        conexion = conectar_db() # Conexion a la base de datos
-        if conexion is None:
-            return jsonify({'error': 'no se pudo conectar a la base de datos'}), 500 # Retorna error 500 de conexion por no poder conectar la base de datos
-        cursor = conexion.cursor(cursor_factory= RealDictCursor) # Crea un cursor que retorna diccionarios desde el inicio hasta el final
-        cursor.execute("SELECT * FROM contactos ORDER BY creado DESC")# Sentencia SQL para seleccionar todos los contactos
-        contactos = cursor.fetchall() # Obtiene todos los registros
-        cursor.close() # Cierra la conexion
-        # Formatear la fecha de creacion para que sea legible
-        for contacto in contactos:
-            if contacto['Creado']:
-                contacto['Creado'] = contacto['Creado'].strftime('%y-%m-%d %H:%M:%S')
-        # Devuelve la lista de datos de contacto en formato JSON
-        return jsonify(contactos),200
-    except Exception as e:
-        print("Error al conectar la base de datos",e) # Si ocurre un error lo muestra y devuelve un mensaje de error
-        return jsonify({'error': 'No se puede conectar la base de dato'}), 500 # Retorna error 500 de conexion por no poder conectar la base de datos
-if __name__ == '__main__':
-    print("Iniciando servidor. . . . . . . . . ")
-    # crear_tabla() # Crea una tabla si no tengo conexion
-    app.run(debug=True)
+        conexion = conectar_bd() # Se activa la conexion con la db
+        if conexion is None: # Si no se logro
+            return jsonify({'error': 'No se pudo conectar a la base de datos'}), 500 # Imprime error
+
+        # Crear cursor que devuelve resultados tipo diccionario
+        cursor = conexion.cursor(cursor_factory=RealDictCursor)
+
+        # Obtener todos los registros ordenados por fecha descendente
+        cursor.execute("""
+            SELECT id, nombre, apellido, direccion, telefono, correo, mensaje, creado
+            FROM contactos
+            ORDER BY creado DESC;
+        """)
+        contactos = cursor.fetchall() # Su principal función es recuperar todas las filas restantes del conjunto de resultados de la consulta.
+
+        # Formatear la fecha para que sea más legible
+        for c in contactos: # Recorre con una variable c la tabla contactos que se va consultar
+            if c['creado']: # Si existe la seccion creado en el diccinario que importamos directamente con la funcion from psycopg2.extras import RealDictCursor
+                c['creado'] = c['creado'].strftime('%Y-%m-%d %H:%M:%S') # Lo formatea a .strftime,cambia la variable por la misma pero formateada al metodo time
+
+        # Devolver los contactos en formato JSON
+        return jsonify(contactos), 200 # Retorna todos los contactos en el formato JSON
+
+    except Exception as e: # Se crea la variable e si pasa la excepcion y no se logra obtener los contactos; los registros en pocas palabras
+        print(f"Error al obtener contactos: {e}") # Se imprime
+        return jsonify({'error': 'Error al obtener contactos'}), 500 # Se retorna en formato JSON el error
+
+    finally: # Finalmente se cierra el cursor y la conexion
+        if cursor:
+            cursor.close()
+        if conexion:
+            conexion.close()
 
 
+#  Punto de inicio del servidor Flask
 
-
-
+if __name__ == '__main__': # Si es correcto el aplicativo flask a '__main__' 
+    print("🚀 Iniciando servidor Flask...") # Se imprime iniciando servidor para una mejor estetica
+    app.run(debug=True, host='0.0.0.0', port=5000) # Y se aplica app.run para poner a correr la aplicacion
