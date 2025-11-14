@@ -47,12 +47,11 @@ def inicio(): # Funcion que permitira ejecutar la primera pagina
 #  No se abre en el navegador como un HTML visual
 #  pero sí existe internamente dentro del servidor Flask para recibir datos.
 
-# GET → para pedir datos (por ejemplo, ver información)
+# GET  para pedir datos (por ejemplo, ver información)
 
-# POST → para enviar datos (por ejemplo, enviar un formulario),en este caso para enviar los datos del formulario
+# POST  para enviar datos (por ejemplo, enviar un formulario),en este caso para enviar los datos del formulario
 
-# PUT, DELETE → para actualizar o eliminar datos, respectivamente.
-
+# PUT, DELETE para actualizar o eliminar datos, respectivamente.
 
 # Funcion para guardar cada formulario despues del metodo POST que envia los datos
 
@@ -117,11 +116,11 @@ def guardar_contacto():
 #  No se abre en el navegador como un HTML visual
 #  pero sí existe internamente dentro del servidor Flask para recibir datos.
 
-# GET → para pedir datos (por ejemplo, ver información),en este caso pedir los datos y agarrarlos para su consulta de los contactos
+# GET  para pedir datos (por ejemplo, ver información),en este caso pedir los datos y agarrarlos para su consulta de los contactos
 
-# POST → para enviar datos (por ejemplo, enviar un formulario)
+# POST  para enviar datos (por ejemplo, enviar un formulario)
 
-# PUT, DELETE → para actualizar o eliminar datos, respectivamente.
+# PUT, DELETE  para actualizar o eliminar datos, respectivamente.
 
 
 # Funcion para ver los contactos de la db

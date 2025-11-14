@@ -6,79 +6,112 @@
     <title>Registro de Contacto</title>
     <style>
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: aliceblue;
-            padding: 40px;
+            font-family: Arial, Helvetica, sans-serif; /*Tipografia*/
+            background-color: aliceblue; /*Fondo blanco del body*/
+            padding: 40px; /* Espacio interno del contenedor*/
         }
         .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 500px; /* Ancho maximo del formulario*/
+            margin: 0 auto; /* Centrar el contenedor*/
+            background-color: white; /*Fondo blanco del contenedor*/
+            padding: 30px;/* Espacio interno del contenedor*/
+            border-radius: 10px; /* Bordes redondos*/
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Sombra suave*/
         }
-        h2 {
-            text-align: center;
-            color: #333;
+        h2 { /*Estilo del subtitulo principal*/
+            text-align: left; /*Va en la izquierda*/
+            color: #333; /*Su color*/
+        /*Etiquetas de los campos del formulario*/
         }
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
+        label { 
+            display: block; /*Hace que ocupe una linea completa*/
+            margin-top: 10px; /*Que ocupe las margenes un 10px*/
+            font-weight: bold; /*Negrilla*/
         }
+        /*Campo de texto y areas del mensaje*/
         input, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            width: 100%; /*Ocupara todo el ancho disponible*/
+            padding: 8px; /*Espacio que se encuentra dentro del borde; 8px*/
+            margin-top: 5px; /*Margen del top*/
+            border-radius: 5px;/* Bordes redondos*/
+            border: 1px solid #ccc; /*Borde basico*/
         }
-        textarea {
-            resize: none;
-            height: 80px;
+        /*Definir el tamaño minimo del area del texto*/
+        textarea { /*Es un campo de entrada de texto que permite textos de largo,saltos de linea,etc */
+            resize: none; /*Hacia ningun lado,solo derecho*/
+            height: 80px; /*Altura*/
         }
+        /*Boton enviar*/
         button {
-            margin-top: 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            width: 100%;
-            cursor: pointer;
+            margin-top: 15px; /*Margen del top*/
+            background-color: #007bff; /*Fondo blanco del boton*/
+            color: white; /*Color del boton*/
+            border: none;/*Borde simple*/
+            padding: 10px 15px;/*Espacio que se encuentra dentro del borde; 15px*/
+            border-radius: 5px;/* Bordes redondos*/
+            width: 100%; /*Ocupara todo el ancho disponible*/
+            cursor: pointer; /*Estilo del cursor*/
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #0056b3; /*Fondo azul del boton*/
         }
     </style>
 </head>
-<body>
+<body> <!--Cuerpo del html-->
+    <!--CONTENIDO DE LA PAGINA; AQUI ESTA LA INFORMACION DE CONTACTO Y LOS TEXTOS INFRORMATIVOS--->
+    <div class="container"> <!-- Clase del contenedor que hicimos en CSS-->
+        <h2>Registro de Contacto</h2> <!--Titulo con tamaño h2-->
+        <form action="/formulario" method="POST"> <!-- El formulario tiene la accion de POST;
+            Parte del protocolo HTTP para enviar datos -->
+            <label for="nombre">Nombre:</label> <!-- Etiqueta con un campo de entrada en un formulario -->
+            <input type="text" id="nombre" name="nombre" required> <!-- Entrada de tipo text para el nombre y que es requerido -->
 
-    <div class="container">
-        <h2>Registro de Contacto</h2>
-        <form action="/formulario" method="POST">
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" required>
+            <label for="apellido">Apellido:</label> <!-- Etiqueta con un campo de entrada en un formulario -->
+            <input type="text" id="apellido" name="apellido" required> <!-- Entrada de tipo text para el apellido y que es requerido -->
 
-            <label for="apellido">Apellido:</label>
-            <input type="text" id="apellido" name="apellido" required>
+            <label for="direccion">Dirección:</label> <!-- Etiqueta con un campo de entrada en un formulario -->
+            <input type="text" id="direccion" name="direccion" required> <!-- Entrada de tipo text para la direccion y que es requerido -->
 
-            <label for="direccion">Dirección:</label>
-            <input type="text" id="direccion" name="direccion" required>
+            <label for="telefono">Teléfono:</label> <!-- Etiqueta con un campo de entrada en un formulario -->
+            <input type="text" id="telefono" name="telefono" required> <!-- Entrada de tipo text para el telefono y que es requerido -->
 
-            <label for="telefono">Teléfono:</label>
-            <input type="text" id="telefono" name="telefono" required>
 
-            <label for="correo">Correo:</label>
-            <input type="email" id="correo" name="correo" required>
+            <label for="correo">Correo:</label> <!-- Etiqueta con un campo de entrada en un formulario -->
+            <input type="email" id="correo" name="correo" required> <!-- Entrada de tipo text para el correo y que es requerido -->
 
-            <label for="mensaje">Mensaje:</label>
-            <textarea id="mensaje" name="mensaje" placeholder="Escribe tu mensaje..."></textarea>
+            <label for="mensaje">Mensaje:</label> <!-- Etiqueta con un campo de entrada en un formulario -->
+            <textarea id="mensaje" name="mensaje" placeholder="Escribe tu mensaje..."></textarea> <!-- Mensaje con placeholder para que lo tome como ejemplo -->
+            <!--Es un campo de entrada de texto que permite textos de largo,saltos de linea,etc-->
 
-            <button type="submit">Registrar</button>
-        </form>
-    </div>
+            <button type="submit">Registrar</button> <!-- Boton para que envie el registro-->
+        </form> <!--Se cierra el form-->
+    </div> <!--Se cierra el div-->
 
-</body>
-</html>
+
+
+    <!-- <script>
+        const fformData = {
+            nombre: document.getElementById('nombre').value,
+            apellido: document.getElementById('apellido').value,
+            direccion: document.getElementById('direccion').value,
+            telefono: document.getElementById('telefono').value,
+            correo: document.getElementById('correo').value,
+            mensaje: document.getElementById('mensaje').value
+        }
+        console.log('datos a enviar: ', FormData);
+        // Enviar los datos al servidor
+        try{
+            const response = await fetch('/contacto', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(FormData)
+            });
+            // Convertir la ruta de respuesta del servidor en JSON
+            const result = await response.json();
+            // Se selecciona el vid donde se mostrara el mensaje de respuesta
+            const mensajeDiv = document.getElementById('mensaje');
+        }
+    </script> -->
+
+</body> <!--Se cierra el body-->
+</html> <!--Se cierra el archivo html-->
