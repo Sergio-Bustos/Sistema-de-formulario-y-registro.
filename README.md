@@ -1,7 +1,7 @@
 📌 Despliegue de una app con:
 
 - PostgreSQL
-- HTML
+- HTML + CSS
 - Python en Back-end
 - Flask + Jinja2 en Python
 
